@@ -4,10 +4,10 @@ version: '3'
 
 services:
   db:
-    image: mysql
+    image: mysql:8.0
     container_name: db
     restart: unless-stopped
-    env_file: .env
+    env_file: /.env
     environment:
       - MYSQL_DATABASE=wordpress
     volumes:
@@ -19,10 +19,12 @@ services:
   wordpress:
     depends_on: 
       - db
-    image: wordpress:latest
+    image: wordpress:5.1.1-fpm-alpine
     container_name: wordpress
     restart: unless-stopped
-    env_file: .env
+    env_file: .en
+    ports:
+      - "9000:9000"
     environment:
       - WORDPRESS_DB_HOST=db:3306
       - WORDPRESS_DB_USER=$MYSQL_USER
@@ -36,30 +38,30 @@ services:
   webserver:
     depends_on:
       - wordpress
-    image: nginx:latest
+    image: nginx:stable
     container_name: webserver
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - wordpress:/var/www/html
       - ./nginx-conf:/etc/nginx/conf.d
-      - certbot-etc:/etc/letsencrypt
+        #  - certbot-etc:/etc/letsencrypt
     networks:
       - app-network
 
-  certbot:
-    depends_on:
-      - webserver
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - certbot-etc:/etc/letsencrypt
-      - wordpress:/var/www/html
-    command: certonly --webroot --webroot-path=/var/www/html --email Pushkar@wordpress.com --agree-tos --no-eff-email --staging -d wordpress.com -d www.wordpress.com
+        #  certbot:
+        #    depends_on:
+        #      - webserver
+        #    image: certbot/certbot
+        #    container_name: certbot
+        #    volumes:
+        #      - certbot-etc:/etc/letsencrypt
+        #      - wordpress:/var/www/html
+        #    command: certonly --webroot --webroot-path=/var/www/html --email Pushkar@wordpress.com --agree-tos --no-eff-email --staging -d wordpress.com -d www.wordpress.com
 
 volumes:
-    certbot-etc: {}
+        #    certbot-etc: {}
     wordpress: {}
     dbdata: {}
 
